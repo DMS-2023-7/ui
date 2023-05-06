@@ -50,7 +50,35 @@
                   })
         
                 return response.then(res=>res.json());
-        
+            
+
+            // 코드 작성 부분(uiseok)    
+            // Kafka consumer 설정
+            var kafka = require('kafka-node');
+            var Consumer = kafka.Consumer;
+            var client = new kafka.KafkaClient({kafkaHost: 'localhost:9092'});
+            var consumer = new Consumer(
+                client,
+                [{ topic: 'chat', partition: 0 }],
+                {
+                    autoCommit: true,
+                    fromOffset: false
+                }
+            );
+
+            // Kafka consumer로부터 메시지 가져와서 UI에 출력
+            consumer.on('message', function(message) {
+                console.log(message.value);  // 메시지 출력
+                $('#chat').val($('#chat').val() + message.value + '\n');  // UI에 출력
+                $('#chat').scrollTop($('#chat')[0].scrollHeight);
+            });
+
+            consumer.on('error', function(err) {
+                console.log('Error:', err);
+            });
+            // 코드 작성 부분(uiseok)
+
+
             }
             async function exec(){
                 var text;
