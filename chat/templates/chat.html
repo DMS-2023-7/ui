@@ -27,9 +27,23 @@
 
             // 유저가 작성한 이미지 띄우기
             $(document).ready(function() {
+
+                // 유저가 작성 버튼 누른 시각 
+                var today = new Date(); 
+
+                var month = ('0' + (today.getMonth() + 1)).slice(-2);
+                var day = ('0' + today.getDate()).slice(-2);
+                var dateString = month  + '/' + day;  
+
+                var hours = ('0' + today.getHours()).slice(-2); 
+                var minutes = ('0' + today.getMinutes()).slice(-2);
+                var timeString = hours + ':' + minutes;
+
+
+
                 var socket = io.connect('http://' + document.domain + ':' + location.port + '/test');
                 function updateImage(imageUrl) {
-                    $('#chat_img').append('<br> <img src="'+imageUrl+'"width="100px" height="100px" >')
+                    $('#chat_img').append('<br>  <img src="'+imageUrl+'"width="100px" height="100px" >' + " ("+dateString+ " "+ timeString+")")
 
                 }
     
@@ -68,7 +82,7 @@
                 const text = document.getElementById('text').value;
                 
                 // kafka 서버에 메시지 전송
-                const response = fetch("http://localhost:8989/msg_send", {
+                const response = fetch("http://3.135.130.17:8989/msg_send", {
                     method: "POST",
                     headers: {
                       "Content-Type": "application/json",
@@ -93,13 +107,48 @@
                 }
             }
 
+            // kafka producer서버에 유저가 작성한 이미지 전송
+            async function img_send(){
+                var file = $('#imageFile')[0].files[0];
+                
+
+                if (!file) {
+                    alert('파일을 선택해주세요.');
+                    return;
+                }
+                
+               
+                
+                const formData = new FormData();
+                formData.append('image', file);
+               
+                
+                try {
+                    const response = await fetch('http://localhost:8989/img_send', {  
+                        method: 'POST',
+                        body: formData
+                    });
+                
+                    if (response.ok) {
+                        alert('이미지가 업로드되었습니다.');
+                    } else {
+                        alert('이미지 업로드에 실패했습니다.');
+                    }
+                    } catch (error) {
+                    console.error(error);
+                    alert('이미지 업로드에 실패했습니다.');
+                } 
+   
+            }
+        
+
             // kafka consumer 서버에 유저가 작성한 메시지 받아오기
             $(document).ready(function() {
                 var socket = io.connect('http://' + document.domain + ':' + location.port + '/chat');
     
                 socket.on('text', (data) => {
                     // 데이터를 받아와서 div에 추가
-    
+		            console.log("####################################3333333333",data);    
                     const div = document.getElementById('chat_img');
                     div.innerHTML += `<br>${data.writer} : ${data.content}  (${data.timestamp})`;
 
@@ -129,13 +178,24 @@
     </head>
     <body>
         <h1>Chat Room: {{ room }}</h1>
-        <h3>DMS 7 team <button onclick="exec_get();">새로고침</button> </h3>  
+        <h3>DMS 7 team <a href="#" onclick="leave_room();">채팅방 나가기</a> </h3>  
        
-        <div id="chat_img" style="border:1px solid; width:500px; height:300px;" ></div><br><br>
+        <div id="chat_img" style="border:1px solid; width:700px; height:400px;" ></div>
         
         {{ name }} <input id="text" size="80" placeholder="메시지를 입력해보세요!"> 
-        <button onclick="msg_send();">전송</button>   <br>
-        <a href="#" onclick="leave_room();">채팅방 나가기</a>
+        <button onclick="msg_send();">전송</button>   <br><br>
+
+        
+        <div class="button">
+            <label for="chooseFile">
+                👉 send image 👈
+            </label>
+        </div>
+        <input type="file" id="imageFile" accept="image/*">
+        
+        <button class="submitButton" id="submitButton" onclick="img_send();">전송</button>
+
+        
 
     </body>
 </html>
