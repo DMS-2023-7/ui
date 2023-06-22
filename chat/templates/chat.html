@@ -12,15 +12,17 @@
                 });
                 
                 socket.on('status', function(data) {
-                    // $('#chat').val($('#chat').val() + '<' + data.msg + '>\n');
                     const div = document.getElementById('chat_img');
-                    div.append('<' + data.msg + '>');
+                    const textNode = document.createElement('p');
+                    textNode.innerHTML = "💡"+ data.msg  + "<br>";
+                    div.append(textNode);
+                    
                     $('#chat_img').scrollTop($('#chat_img')[0].scrollHeight);
                 });
                 socket.on('message', function(data) {
-                    //$('#chat').val($('#chat').val() + '<' + data.msg + '>\n');
-                    const div = document.getElementById('chat_img');
-                    div.append('<' + data.msg + '>');
+                    const textNode = document.createElement('p');
+                    textNode.innerHTML = "💡"+ data.msg  + "<br>";
+                    div.append(textNode);
                     $('#chat_img').scrollTop($('#chat_img')[0].scrollHeight);
                 });
             });
